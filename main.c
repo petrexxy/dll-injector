@@ -7,7 +7,7 @@
 #define false 0 //TimeToInject Function returns 'true' or 'false' and function is type int - Converted keywords
 
 #ifndef USAGE
-#define USAGE "USAGE: inject.exe [DLL PATH] [-execute (Program To Execute)] || [-process (Process Name)] || [-window (Window Title)]\n"
+#define USAGE "USAGE: inject.exe [DLL PATH] [-e (Program To Execute)] || [-p (Process Name)] || [-w (Window Title)]\n"
 #endif
 
 DWORD GetProcIDByCreation(char* __file_location, HANDLE* __resume_thread);
