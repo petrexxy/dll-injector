@@ -7,7 +7,7 @@ First make sure you have MinGW-w64 installed!!!!! If not download it from:
     
 After, run:
 
-    C:\Users\You\Somewhere>gcc -o inject inject.c
+    C:\Users\You\Somewhere>gcc -o inject main.c
     
 That should create an exe file that you can run from the command line!!!! Run 'inject.exe' from the command line or double click and you should see the usage of the program.
 
