@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
 
 	fprintf(stdout, "Process ID: %ld - Selected\n", proc_id);
 	printf("Injecting DLL...\n");
-	printf("Injection: %s\n", TimeToInject(proc_id, argv[1]) ? "Success" : "Failed");
+	fprintf(stdout, "Injection: %s\n", TimeToInject(proc_id, argv[1]) ? "Success" : "Failed");
 	if (choice == 'c') {
 		ResumeThread(handle_thread);
 	}
