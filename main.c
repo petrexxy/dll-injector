@@ -10,14 +10,14 @@
 #define USAGE "USAGE: inject.exe [DLL PATH] [-e (Program To Execute)] || [-p (Process Name)] || [-w (Window Title)]\n"
 #endif
 
-DWORD GetProcIDByCreation(char* __file_location, HANDLE* __resume_thread);
-DWORD GetProcIDByProcessName(char* __process_name);
+DWORD GetProcIDByCreation(char* __file_location, HANDLE* __res_thread);
+DWORD GetProcIDByProcessName(char* __proc_name);
 DWORD GetProcIDByWindowTitle(char* __window_title);
-int TimeToInject(DWORD __process_id, char* __dll_location);
+int TimeToInject(DWORD process_id, char* __dll_loc);
 
 int main(int argc, char** argv) {
-	DWORD __proc_id;
-	HANDLE hThread;
+	DWORD proc_id;
+	HANDLE handle_thread;
 	char choice;
 
 	if (argc != 4) {
@@ -28,90 +28,90 @@ int main(int argc, char** argv) {
 	do {
 		switch (choice) {
 		case 'e': // argv[2] = -execute then argv[2][1] = 'e'
-			__proc_id = GetProcIDByCreation(argv[3], &hThread);
+			proc_id = GetProcIDByCreation(argv[3], &handle_thread);
 			break;
 		case 'p':
-			__proc_id = GetProcIDByProcessName(argv[3]);
+			proc_id = GetProcIDByProcessName(argv[3]);
 			break;
 		case 'w':
-			__proc_id = GetProcIDByWindowTitle(argv[3]);
+			proc_id = GetProcIDByWindowTitle(argv[3]);
 			break;
 		default:
 			printf("Unknown Option %c\n", choice);
 			fprintf(stderr, "%s\n", USAGE); system("PAUSE");
 		}
-	} while (!__proc_id);
+	} while (!proc_id);
 
-	fprintf(stdout, "Process ID: %ld - Selected\n", __proc_id);
+	fprintf(stdout, "Process ID: %ld - Selected\n", proc_id);
 	printf("Injecting DLL...\n");
-	printf("Injection: %s\n", TimeToInject(__proc_id, argv[1]) ? "Success" : "Failed");
+	printf("Injection: %s\n", TimeToInject(proc_id, argv[1]) ? "Success" : "Failed");
 	if (choice == 'c') {
-		ResumeThread(hThread);
+		ResumeThread(handle_thread);
 	}
 };
 
-int TimeToInject(DWORD __process_id, char* __dll_location) {
-	HANDLE hProc;
-	HANDLE hThread;
-	LPVOID dllParamAddress;
-	LPVOID loadLibrary;
-	BOOL memoryWritten;
+int TimeToInject(DWORD process_id, char* __dll_loc) {
+	HANDLE handle_proc;
+	HANDLE handle_thread;
+	LPVOID dll_parameter_addr;
+	LPVOID load_lib;
+	BOOL mem_writ;
 
-	loadLibrary = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
-	if (!loadLibrary) { printf("Failed @ GetProcAddress\n"); return false; }
+	load_lib = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+	if (!load_lib) { printf("Failed @ GetProcAddress\n"); return false; }
 
-	hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, __process_id);
-	if (!hProc) { printf("Failed @ OpenProcess\n"); return false; }
+	handle_proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process_id);
+	if (!handle_proc) { printf("Failed @ OpenProcess\n"); return false; }
 
-	dllParamAddress = VirtualAllocEx(hProc, 0, strlen(__dll_location), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-	if (!dllParamAddress) { printf("Failed @ VirtualAllocEx\n"); CloseHandle(hProc); return false; }
+	dll_parameter_addr = VirtualAllocEx(handle_proc, 0, strlen(__dll_loc), MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	if (!dll_parameter_addr) { printf("Failed @ VirtualAllocEx\n"); CloseHandle(handle_proc); return false; }
 
-	memoryWritten = WriteProcessMemory(hProc, dllParamAddress, __dll_location, strlen(__dll_location), NULL);
-	if (!memoryWritten) { printf("Failed @ WriteProcessMemory\n"); CloseHandle(hProc); return false; }
+	mem_writ = WriteProcessMemory(handle_proc, dll_parameter_addr, __dll_loc, strlen(__dll_loc), NULL);
+	if (!mem_writ) { printf("Failed @ WriteProcessMemory\n"); CloseHandle(handle_proc); return false; }
 
-	hThread = CreateRemoteThread(hProc, 0, 0, (LPTHREAD_START_ROUTINE)loadLibrary, dllParamAddress, 0, 0);
-	if (!hThread) { printf("Failed @ CreateRemoteThread"); CloseHandle(hProc); return false; }
+	handle_thread = CreateRemoteThread(handle_proc, 0, 0, (LPTHREAD_START_ROUTINE)load_lib, dll_parameter_addr, 0, 0);
+	if (!handle_thread) { printf("Failed @ CreateRemoteThread"); CloseHandle(handle_proc); return false; }
 
-	CloseHandle(hThread);
-	CloseHandle(hProc);
+	CloseHandle(handle_thread);
+	CloseHandle(handle_proc);
 	return true;
 }
 
 DWORD GetProcIDByWindowTitle(char* __window_title) {
-	HWND hWind;
-	DWORD __proc_id = 0;
-	hWind = FindWindow((NULL || 0), __window_title);
-	if (hWind) { GetWindowThreadProcessId(hWind, &__proc_id); }
-	return __proc_id;
+	HWND handle_window;
+	DWORD proc_id = 0;
+	handle_window = FindWindow((NULL || 0), __window_title);
+	if (handle_window) { GetWindowThreadProcessId(handle_window, &proc_id); }
+	return proc_id;
 }
 
-DWORD GetProcIDByProcessName(char* __process_name) {
+DWORD GetProcIDByProcessName(char* __proc_name) {
 	PROCESSENTRY32 pe32 = { sizeof(PROCESSENTRY32) };
-	HANDLE hProcSnap;
-	DWORD __process_id = 0;
-	hProcSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (Process32First(hProcSnap, &pe32)) {
+	HANDLE handle_proc_snap;
+	DWORD process_id = 0;
+	handle_proc_snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (Process32First(handle_proc_snap, &pe32)) {
 		do {
-			if (!strcmp(pe32.szExeFile, __process_name)) {
-				__process_id = pe32.th32ProcessID;
+			if (!strcmp(pe32.szExeFile, __proc_name)) {
+				process_id = pe32.th32ProcessID;
 				break;
 			}
-		} while (Process32Next(hProcSnap, &pe32));
+		} while (Process32Next(handle_proc_snap, &pe32));
 	}
-	CloseHandle(hProcSnap);
-	return __process_id;
+	CloseHandle(handle_proc_snap);
+	return process_id;
 }
 
-DWORD GetProcIDByCreation(char* __file_location, HANDLE* __resume_thread) {
-	STARTUPINFO __startup_info;
-	PROCESS_INFORMATION __process_info;
-	memset(&__startup_info, 0, sizeof(__startup_info));
-	memset(&__process_info, 0, sizeof(__process_info));
-	__startup_info.cb = sizeof(__startup_info);
+DWORD GetProcIDByCreation(char* __file_location, HANDLE* __res_thread) {
+	STARTUPINFO startup_info;
+	PROCESS_INFORMATION process_info;
+	memset(&startup_info, 0, sizeof(startup_info));
+	memset(&process_info, 0, sizeof(process_info));
+	startup_info.cb = sizeof(startup_info);
 
-	if (CreateProcess(NULL, __file_location, 0, 0, false, CREATE_SUSPENDED, 0, 0, &__startup_info, &__process_info)) {
-		*__resume_thread = __process_info.hThread;
-		return __process_info.dwProcessId;
+	if (CreateProcess(NULL, __file_location, 0, 0, false, CREATE_SUSPENDED, 0, 0, &startup_info, &process_info)) {
+		*__res_thread = process_info.hThread;
+		return process_info.dwProcessId;
 	}
 	return 0;
 }
