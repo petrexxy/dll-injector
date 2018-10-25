@@ -11,7 +11,7 @@ After, run:
     
 That should create an exe file that you can run from the command line!!!! Run 'inject.exe' from the command line or double click and you should see the usage of the program.
 
-    USAGE: inject.exe [DLL PATH] [-execute (Program To Execute)] || [-process (Process Name)] || [-window (Window Title)]
+    USAGE: inject.exe [DLL PATH] [-e (Program To Execute)] || [-p (Process Name)] || [-w (Window Title)]
 
     Press any key to continue . . . 
     
